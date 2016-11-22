@@ -1,3 +1,6 @@
+// Arduino Lipo Storage Discharger
+// Project Page: https://github.com/KaeptnBalu/Arduino_Lipo_Storage_Discharger
+
 #include <Adafruit_GFX.h>       //library for display control
 #include <Adafruit_SSD1306.h>   //library for display control
 #include <SPI.h>                //library for display I2C communication
