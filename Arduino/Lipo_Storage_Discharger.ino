@@ -38,7 +38,7 @@ PID myPID(&Input, &Output, &Setpoint,2,5,1, DIRECT);
 //------------------------------------------------------------------------------------------------------
 
 
-double Amps = 0;                    //Current measured by the ACS712
+double Amps = 0.0;                    //Current measured by the ACS712
 float cell_storage_voltage = 3.8;    // the storage voltage per cell to which the battery will be discharged 
 int discharging = 0;                //discharging status (1: discharging on , 0: discharging off) 
 double discharge_power = 0;         //discharge Power in Watts
@@ -64,23 +64,36 @@ int r2 = 0;      //value of select pin at the 4051 (C)
 int count = 0;   //which X Input pin we are selecting
 
 //variables for the multiplexer output values of cell 1 to 6
-float m_cell_1 = 0;  
-float m_cell_2 = 0;
-float m_cell_3 = 0;
-float m_cell_4 = 0;
-float m_cell_5 = 0;
-float m_cell_6 = 0;
+float m_cell_1 = 0.0;  
+float m_cell_2 = 0.0;
+float m_cell_3 = 0.0;
+float m_cell_4 = 0.0;
+float m_cell_5 = 0.0;
+float m_cell_6 = 0.0;
 
 //------------------------------------------------------------------------------------------------------
 
 //variables for the calculated single cell voltages of cell 1 to 6 and total voltage
-float v_cell_1 = 0;
-float v_cell_2 = 0;
-float v_cell_3 = 0;
-float v_cell_4 = 0;
-float v_cell_5 = 0;
-float v_cell_6 = 0;
-float v_total = 0;
+float v_cell_1 = 0.0;
+float v_cell_2 = 0.0;
+float v_cell_3 = 0.0;
+float v_cell_4 = 0.0;
+float v_cell_5 = 0.0;
+float v_cell_6 = 0.0;
+float v_total = 0.0;
+
+//------------------------------------------------------------------------------------------------------
+
+//variables to calculate the used mAh and Wh
+unsigned long msec = 0;
+float time = 0.0;
+int sample = 0;
+float totalCharge = 0.0;
+float averageAmps = 0.0;
+float ampSeconds = 0.0;
+float ampHours = 0.0;
+float wattHours = 0.0;
+
 
 //------------------------------------------------------------------------------------------------------
 
@@ -127,6 +140,7 @@ void loop() {
 read_cell_voltages();
 calculate_single_cell_voltages();
 read_amps();
+calculate_Ah_and_Wh();
 
 
 cell_min_voltage_check();           //if all cells are above the storage voltage "discharging" will be set to 1. If not it will be set to 0
@@ -300,6 +314,23 @@ if (v_cell_6 != 0)
   
 }
 
+//------------------------------------------------------------------------------------------------------
+
+void calculate_Ah_and_Wh() {
+      //Function to calculate the used Ah and Wh while discharging  
+sample = sample + 1;
+msec = millis();
+time = (float) msec / 1000.0;
+
+totalCharge = totalCharge + Amps;
+averageAmps = totalCharge / sample;
+ampSeconds = averageAmps*time;
+ampHours = ampSeconds/3600;
+wattHours = v_total * ampHours;  
+}
+
+//------------------------------------------------------------------------------------------------------
+
 void display_discharge_infos()
 {
   display.setTextSize(2);
@@ -307,26 +338,36 @@ void display_discharge_infos()
 
   display.setCursor(10,10);
   display.println("Batter Voltage:");
-  display.setCursor(15,20);
+  display.setCursor(15,15);
   display.println(v_total);
-  display.setCursor(40,20);
+  display.setCursor(40,15);
   display.println("V");
 
-  display.setCursor(10,30);
+  display.setCursor(10,25);
   display.println("Discharge Current:");
-  display.setCursor(15,40);
+  display.setCursor(15,30);
   display.println(Amps);
-  display.setCursor(40,40);
+  display.setCursor(40,30);
   display.println("A");
 
-  display.setCursor(10,50);
+  display.setCursor(10,40);
   display.println("Discharge Power:");
-  display.setCursor(15,60);
+  display.setCursor(15,45);
   display.println(discharge_power);
-  display.setCursor(40,60);
+  display.setCursor(40,45);
   display.println("W");
 
-  
+  display.setCursor(10,55);
+  display.println("Used Ah and Wh:");
+  display.setCursor(10,60);
+  display.println(ampHours);
+  display.setCursor(30,60);
+  display.println("Ah");
+  display.setCursor(40,60);
+  display.println(wattHours);
+  display.setCursor(60,60);
+  display.println("Wh");
+
   display.display();
 }  
 
