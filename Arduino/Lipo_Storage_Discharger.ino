@@ -38,12 +38,12 @@ PID myPID(&Input, &Output, &Setpoint,2,5,1, DIRECT);
 //------------------------------------------------------------------------------------------------------
 
 
-double Amps = 0.0;                    //Current measured by the ACS712
+float Amps = 0.0;                    //Current measured by the ACS712
 float cell_storage_voltage = 3.8;    // the storage voltage per cell to which the battery will be discharged 
 int discharging = 0;                //discharging status (1: discharging on , 0: discharging off) 
 double discharge_power = 0;         //discharge Power in Watts
 double max_discharge_power = 120;   //Sets the maximum discharge Power (depending on the load used. example: 4x30Watt light bulb = 120 Watts maximum)
-
+int i=0;
 //------------------------------------------------------------------------------------------------------
 
 //Voltage Multiplicators because cell 2 to 6 are read through voltage dividers   (calculation example cell2: (1/(R2/(R2+R7)) )  
@@ -113,6 +113,7 @@ pinMode(Multiplexer,INPUT);  // set Multiplexer as Input
 pinMode(Poti,INPUT);  // set Poti as Input
 pinMode(ACS712,INPUT);  // set ACS712 as Input
 
+
 //initialize the board
 display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 display.clearDisplay();
@@ -148,8 +149,10 @@ if (discharging == 1) PID_loop();
 else  analogWrite(MosfetPin,0);
 
 
-display_discharge_infos();
-display_cell_voltages();
+//display_discharge_infos();
+//display_cell_voltages();
+ display_info_switch();
+
 
 }
 
@@ -333,41 +336,43 @@ wattHours = v_total * ampHours;
 
 void display_discharge_infos()
 {
-  display.setTextSize(2);
+  display.setTextSize(1);
   display.setTextColor(WHITE);
+  display.clearDisplay();
 
-  display.setCursor(10,10);
-  display.println("Batter Voltage:");
-  display.setCursor(15,15);
+  display.setCursor(0,0);
+  display.println("Battery Voltage:");
+  display.setCursor(0,10);
   display.println(v_total);
-  display.setCursor(40,15);
+  display.setCursor(40,10);
   display.println("V");
 
-  display.setCursor(10,25);
-  display.println("Discharge Current:");
-  display.setCursor(15,30);
+display.drawFastHLine(0,19,125,WHITE);
+
+  display.setCursor(0,22);
+  display.println("Dis Current + Power:");
+  display.setCursor(0,32);
   display.println(Amps);
-  display.setCursor(40,30);
+  display.setCursor(40,32);
   display.println("A");
-
-  display.setCursor(10,40);
-  display.println("Discharge Power:");
-  display.setCursor(15,45);
+  display.setCursor(65,32);
   display.println(discharge_power);
-  display.setCursor(40,45);
+  display.setCursor(105,32);
   display.println("W");
+  
+display.drawFastHLine(0,41,125,WHITE);
 
-  display.setCursor(10,55);
+  display.setCursor(0,44);
   display.println("Used Ah and Wh:");
-  display.setCursor(10,60);
+  display.setCursor(0,54);
   display.println(ampHours);
-  display.setCursor(30,60);
+  display.setCursor(40,54);
   display.println("Ah");
-  display.setCursor(40,60);
+  display.setCursor(65,54);
   display.println(wattHours);
-  display.setCursor(60,60);
+  display.setCursor(105,54);
   display.println("Wh");
-
+  
   display.display();
 }  
 
@@ -375,42 +380,49 @@ void display_cell_voltages()
 {
   display.setTextSize(1);
   display.setTextColor(WHITE);
+  display.clearDisplay();
 
-  display.setCursor(80,10);
+  display.setCursor(10,0);
   display.println("Cell 1:");
-  display.setCursor(100,10);
+  display.setCursor(60,0);
   display.println(v_cell_1);
 
-  display.setCursor(80,20);
+  display.setCursor(10,10);
   display.println("Cell 2:");
-  display.setCursor(100,20);
+  display.setCursor(60,10);
   display.println(v_cell_2);
 
-  display.setCursor(80,30);
+  display.setCursor(10,20);
   display.println("Cell 3:");
-  display.setCursor(100,30);
+  display.setCursor(60,20);
   display.println(v_cell_3);
 
-  display.setCursor(80,40);
-  display.println("Cell 3:");
-  display.setCursor(100,40);
-  display.println(v_cell_3);
-
-  display.setCursor(80,40);
+  display.setCursor(10,30);
   display.println("Cell 4:");
-  display.setCursor(100,40);
+  display.setCursor(60,30);
   display.println(v_cell_4);
 
-  display.setCursor(80,50);
+  display.setCursor(10,40);
   display.println("Cell 5:");
-  display.setCursor(100,50);
+  display.setCursor(60,40);
   display.println(v_cell_5);
 
-  display.setCursor(80,60);
+  display.setCursor(10,50);
   display.println("Cell 6:");
-  display.setCursor(100,60);
+  display.setCursor(60,50);
   display.println(v_cell_6);
 
   display.display();
  }
 
+void display_info_switch()
+{
+
+  i = i+1;
+  if (i<100) display_discharge_infos();
+  else display_cell_voltages();
+  
+  if (i>140) i=0;
+  
+  
+  }
